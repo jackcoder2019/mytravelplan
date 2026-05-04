@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet overrides */
+.leaflet-container { border-radius: 0.75rem; }
+
+/* Editable field underline style */
+.editable {
+  @apply bg-transparent border-b border-gray-600 focus:border-accent-teal outline-none w-full;
+}
+
+/* Collapsible card summary arrow */
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: '▸'; margin-left: auto; transition: transform 0.2s; }
+details[open] > summary::after { transform: rotate(90deg); }
