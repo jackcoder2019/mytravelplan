@@ -1,10 +1,12 @@
 'use client'
 import { type Activity } from '@/lib/types'
+import { parseStartHour } from '@/lib/utils'
 
 interface Props {
   activities: Activity[]
   onChange: (activities: Activity[]) => void
 }
+
 
 function Field({ value, onChange, placeholder, className = '' }: {
   value: string; onChange: (v: string) => void; placeholder: string; className?: string
@@ -27,6 +29,8 @@ export default function ActivityList({ activities, onChange }: Props) {
   const update = (id: string, patch: Partial<Activity>) =>
     onChange(activities.map(a => a.id === id ? { ...a, ...patch } : a))
 
+  const sorted = [...activities].sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours))
+
   return (
     <div className="bg-navy-mid rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto" style={{ maxHeight: 400 }}>
       <div className="flex items-center justify-between">
@@ -38,7 +42,7 @@ export default function ActivityList({ activities, onChange }: Props) {
         <p className="text-gray-500 text-sm text-center py-4">No activities yet. Add one!</p>
       )}
 
-      {activities.map(a => (
+      {sorted.map(a => (
         <div key={a.id} className="border border-navy-light rounded-xl p-3 space-y-2 group relative">
           <button
             onClick={() => remove(a.id)}

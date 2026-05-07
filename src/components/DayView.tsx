@@ -1,6 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { type Day } from '@/lib/types'
+import { parseStartHour } from '@/lib/utils'
 import ActivityList from './ActivityList'
 import LodgingCard from './LodgingCard'
 import DiningCard from './DiningCard'
@@ -33,9 +34,20 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
 export default function DayView({ day, onChange }: Props) {
   const set = (patch: Partial<Day>) => onChange({ ...day, ...patch })
 
-  // Collect all geocodable addresses for the map
+  // Rank activities by start time so each map pin gets its chronological number
+  const activityRank = new Map(
+    [...day.activities]
+      .sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours))
+      .map((a, i) => [a.id, i + 1])
+  )
+
   const addresses = [
-    ...day.activities.filter(a => a.address).map(a => ({ label: a.name || 'Activity', address: a.address, color: 'blue' as const })),
+    ...day.activities.filter(a => a.address).map(a => ({
+      label: a.name || 'Activity',
+      address: a.address,
+      color: 'blue' as const,
+      number: activityRank.get(a.id),
+    })),
     ...(day.lodging.address ? [{ label: day.lodging.name || 'Lodging', address: day.lodging.address, color: 'green' as const }] : []),
     ...day.dining.filter(d => d.address).map(d => ({ label: d.name || 'Dining', address: d.address, color: 'orange' as const })),
   ]

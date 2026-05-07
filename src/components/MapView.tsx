@@ -16,11 +16,23 @@ const pinColors = {
   orange: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
 }
 
+const pinHex = { blue: '#3b82f6', green: '#10b981', orange: '#f97316' }
+
 function makeIcon(color: 'blue' | 'green' | 'orange') {
   return new L.Icon({
     iconUrl: pinColors[color],
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
     iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+  })
+}
+
+function makeNumberIcon(num: number, color: 'blue' | 'green' | 'orange') {
+  return L.divIcon({
+    html: `<div style="background:${pinHex[color]};color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);line-height:1">${num}</div>`,
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
   })
 }
 
@@ -37,7 +49,7 @@ async function geocode(query: string): Promise<L.LatLng | null> {
   }
 }
 
-interface AddressPin { label: string; address: string; color: 'blue' | 'green' | 'orange' }
+interface AddressPin { label: string; address: string; color: 'blue' | 'green' | 'orange'; number?: number }
 interface Props { addresses: AddressPin[]; city?: string }
 
 export default function MapView({ addresses, city }: Props) {
@@ -91,10 +103,12 @@ export default function MapView({ addresses, city }: Props) {
     addressesTimerRef.current = setTimeout(async () => {
       const pins = addressesRef.current
       const bounds: L.LatLng[] = []
-      for (const { label, address, color } of pins) {
+      for (const pin of pins) {
+        const { label, address, color } = pin
         const latlng = await geocode(address)
         if (!latlng) continue
-        const marker = L.marker(latlng, { icon: makeIcon(color) })
+        const icon = pin.number != null ? makeNumberIcon(pin.number, color) : makeIcon(color)
+        const marker = L.marker(latlng, { icon })
           .addTo(map)
           .bindPopup(`<strong>${label}</strong><br/>${address}`)
         markersRef.current.push(marker)
