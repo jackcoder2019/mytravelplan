@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { handleSignOut } from '@/lib/auth'
 import { type Itinerary, type SaveStatus } from '@/lib/types'
 import ShareModal from './ShareModal'
@@ -43,6 +43,13 @@ export default function Sidebar({
   onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose,
 }: Props) {
   const [showShare, setShowShare] = useState(false)
+  const dayListRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    const active = dayListRef.current?.querySelector<HTMLElement>('[data-active="true"]')
+    active?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [isOpen, activeDayId])
 
   const exportData = () => {
     const blob = new Blob([JSON.stringify(itinerary, null, 2)], { type: 'application/json' })
@@ -105,10 +112,11 @@ export default function Sidebar({
         </div>
 
         {/* Day list */}
-        <div className="flex-1 overflow-y-auto py-2">
+        <div ref={dayListRef} className="flex-1 overflow-y-auto py-2">
           {itinerary.days.map((day, i) => (
             <div
               key={day.id}
+              data-active={day.id === activeDayId}
               className={`flex items-center px-4 py-2 cursor-pointer group hover:bg-navy-light transition-colors ${day.id === activeDayId ? 'bg-navy-light' : ''}`}
               onClick={() => onSelectDay(day.id)}
             >
@@ -120,7 +128,7 @@ export default function Sidebar({
               {itinerary.days.length > 1 && (
                 <button
                   onClick={e => { e.stopPropagation(); onRemoveDay(day.id) }}
-                  className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-accent-red ml-2 text-lg leading-none"
+                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:pointer-events-none md:group-hover:pointer-events-auto text-gray-500 hover:text-accent-red active:text-accent-red ml-2 text-lg leading-none"
                 >×</button>
               )}
             </div>
