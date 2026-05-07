@@ -9,7 +9,11 @@ export async function GET(req: NextRequest) {
 
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`
   const resp = await fetch(url, {
-    headers: { 'Accept-Language': 'en', 'Accept': 'application/json' },
+    headers: {
+      'User-Agent': 'MyTravelPlan/1.0 (travel planning app; jackcoder2019@gmail.com)',
+      'Accept-Language': 'en',
+      'Accept': 'application/json',
+    },
   })
   const data = await resp.json()
   return NextResponse.json(data)

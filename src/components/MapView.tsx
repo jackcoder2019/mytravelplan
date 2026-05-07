@@ -73,7 +73,7 @@ export default function MapView({ addresses, city }: Props) {
       cityMarkerRef.current = L.marker(latlng)
         .addTo(map)
         .bindPopup(`<strong>${city}</strong>`)
-      if (markersRef.current.length === 0) map.setView(latlng, 11)
+      map.flyTo(latlng, 11)
     }, 600)
   }, [city]) // eslint-disable-line react-hooks/exhaustive-deps
 

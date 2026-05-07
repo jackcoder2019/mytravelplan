@@ -10,6 +10,13 @@
   @apply bg-transparent border-b border-gray-600 focus:border-accent-teal outline-none w-full;
 }
 
+/* Prevent iOS from zooming in when focusing inputs smaller than 16px */
+@media screen and (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
 /* Collapsible card summary arrow */
 details > summary { list-style: none; }
 details > summary::-webkit-details-marker { display: none; }

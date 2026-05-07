@@ -17,6 +17,7 @@ export default function ItineraryPage() {
   const [shareToken, setShareToken] = useState<string | null>(null)
   const [shareLinkEnabled, setShareLinkEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>()
   const lastSavedBy = useRef<string>('self')
@@ -98,15 +99,26 @@ export default function ItineraryPage() {
         sharedWith={sharedWith}
         shareToken={shareToken}
         shareLinkEnabled={shareLinkEnabled}
-        onSelectDay={setActiveDayId}
+        isOpen={sidebarOpen}
+        onSelectDay={id => { setActiveDayId(id); setSidebarOpen(false) }}
         onAddDay={addDay}
         onRemoveDay={removeDay}
         onTripNameChange={name => updateItinerary({ ...itinerary, tripName: name })}
         onSharedWithChange={setSharedWith}
         onShareTokenChange={setShareToken}
         onShareLinkEnabledChange={setShareLinkEnabled}
+        onClose={() => setSidebarOpen(false)}
       />
-      <main className="flex-1 overflow-y-auto bg-navy-deep p-6">
+      <main className="flex-1 overflow-y-auto bg-navy-deep p-4 md:p-6">
+        {/* Mobile top bar */}
+        <div className="flex items-center gap-3 mb-4 md:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg bg-navy-mid text-gray-300 hover:text-white text-xl leading-none"
+            aria-label="Open menu"
+          >☰</button>
+          <span className="text-accent-teal font-semibold truncate">{itinerary.tripName || 'Travel Plan'}</span>
+        </div>
         {activeDay ? (
           <DayView
             day={activeDay}

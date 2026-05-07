@@ -12,6 +12,7 @@ interface Props {
   sharedWith: string[]
   shareToken: string | null
   shareLinkEnabled: boolean
+  isOpen: boolean
   onSelectDay: (id: string) => void
   onAddDay: () => void
   onRemoveDay: (id: string) => void
@@ -19,6 +20,7 @@ interface Props {
   onSharedWithChange: (sw: string[]) => void
   onShareTokenChange: (t: string | null) => void
   onShareLinkEnabledChange: (v: boolean) => void
+  onClose: () => void
 }
 
 const statusLabel: Record<SaveStatus, string> = {
@@ -37,8 +39,8 @@ const statusColor: Record<SaveStatus, string> = {
 export default function Sidebar({
   itinerary, activeDayId, saveStatus, recordId,
   sharedWith, shareToken, shareLinkEnabled,
-  onSelectDay, onAddDay, onRemoveDay, onTripNameChange,
-  onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange,
+  isOpen, onSelectDay, onAddDay, onRemoveDay, onTripNameChange,
+  onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose,
 }: Props) {
   const [showShare, setShowShare] = useState(false)
 
@@ -69,15 +71,34 @@ export default function Sidebar({
 
   return (
     <>
-      <aside className="w-64 h-screen bg-navy-mid flex flex-col border-r border-navy-light">
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={onClose} />
+      )}
+
+      <aside className={`
+        fixed inset-y-0 left-0 z-50
+        md:relative md:inset-auto md:z-auto
+        w-64 flex-shrink-0 h-screen bg-navy-mid flex flex-col border-r border-navy-light
+        transform transition-transform duration-300 ease-in-out
+        md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
         {/* Trip name */}
         <div className="p-4 border-b border-navy-light">
-          <input
-            className="editable text-lg font-bold text-accent-teal w-full"
-            value={itinerary.tripName}
-            onChange={e => onTripNameChange(e.target.value)}
-            placeholder="Trip Name"
-          />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="md:hidden text-gray-400 hover:text-white text-xl leading-none p-1 -ml-1 rounded"
+              aria-label="Close menu"
+            >✕</button>
+            <input
+              className="editable text-lg font-bold text-accent-teal flex-1"
+              value={itinerary.tripName}
+              onChange={e => onTripNameChange(e.target.value)}
+              placeholder="Trip Name"
+            />
+          </div>
           {saveStatus !== 'idle' && (
             <span className={`text-xs mt-1 block ${statusColor[saveStatus]}`}>{statusLabel[saveStatus]}</span>
           )}
