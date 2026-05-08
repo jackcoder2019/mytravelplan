@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { type Activity } from '@/lib/types'
 import { parseStartHour } from '@/lib/utils'
 
@@ -29,32 +30,58 @@ export default function ActivityList({ activities, onChange }: Props) {
   const update = (id: string, patch: Partial<Activity>) =>
     onChange(activities.map(a => a.id === id ? { ...a, ...patch } : a))
 
+  const [open, setOpen] = useState(true)
   const sorted = [...activities].sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours))
 
+  const preview = sorted
+    .map(a => [a.hours, a.name].filter(Boolean).join(' '))
+    .filter(Boolean)
+    .join(' · ')
+
   return (
-    <div className="bg-navy-mid rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto" style={{ maxHeight: 400 }}>
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-accent-teal">Activities</h3>
-        <button onClick={add} className="text-xs px-3 py-1 bg-accent-red hover:bg-red-700 rounded-lg transition-colors">+ Add</button>
+    <div className="bg-navy-mid rounded-2xl overflow-hidden">
+      <div
+        className="flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-navy-light transition-colors"
+        onClick={() => setOpen(o => !o)}
+      >
+        <span
+          className="text-gray-400 text-xs transition-transform duration-200 select-none"
+          style={{ transform: open ? 'rotate(90deg)' : 'none' }}
+        >▸</span>
+        <div className="flex-1 min-w-0">
+          <span className="font-semibold text-accent-teal">
+            Activities{activities.length > 0 ? ` (${activities.length})` : ''}
+          </span>
+          {!open && preview && (
+            <p className="text-xs text-gray-400 truncate mt-0.5">{preview}</p>
+          )}
+        </div>
+        <button
+          onClick={e => { e.stopPropagation(); add() }}
+          className="text-xs px-3 py-1 bg-accent-red hover:bg-red-700 rounded-lg transition-colors"
+        >+ Add</button>
       </div>
 
-      {activities.length === 0 && (
-        <p className="text-gray-500 text-sm text-center py-4">No activities yet. Add one!</p>
-      )}
-
-      {sorted.map(a => (
-        <div key={a.id} className="border border-navy-light rounded-xl p-3 space-y-2 group relative">
-          <button
-            onClick={() => remove(a.id)}
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-accent-red transition"
-          >×</button>
-          <Field value={a.name} onChange={v => update(a.id, { name: v })} placeholder="Activity name" className="font-medium" />
-          <Field value={a.highlight} onChange={v => update(a.id, { highlight: v })} placeholder="Highlight / description" />
-          <Field value={a.hours} onChange={v => update(a.id, { hours: v })} placeholder="Hours (e.g. 9am–12pm)" />
-          <Field value={a.address} onChange={v => update(a.id, { address: v })} placeholder="Address (for map pin)" />
-          <Field value={a.notes} onChange={v => update(a.id, { notes: v })} placeholder="Notes" />
+      {open && (
+        <div className="px-5 pb-5 flex flex-col gap-4 overflow-y-auto" style={{ maxHeight: 400 }}>
+          {activities.length === 0 && (
+            <p className="text-gray-500 text-sm text-center py-4">No activities yet. Add one!</p>
+          )}
+          {sorted.map(a => (
+            <div key={a.id} className="border border-navy-light rounded-xl p-3 space-y-2 group relative">
+              <button
+                onClick={() => remove(a.id)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-accent-red transition"
+              >×</button>
+              <Field value={a.name} onChange={v => update(a.id, { name: v })} placeholder="Activity name" className="font-medium" />
+              <Field value={a.highlight} onChange={v => update(a.id, { highlight: v })} placeholder="Highlight / description" />
+              <Field value={a.hours} onChange={v => update(a.id, { hours: v })} placeholder="Hours (e.g. 9am–12pm)" />
+              <Field value={a.address} onChange={v => update(a.id, { address: v })} placeholder="Address (for map pin)" />
+              <Field value={a.notes} onChange={v => update(a.id, { notes: v })} placeholder="Notes" />
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }

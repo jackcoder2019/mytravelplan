@@ -79,31 +79,30 @@ export default function DayView({ day, onChange }: Props) {
   return (
     <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
       {/* Day header */}
-      <div className="bg-navy-mid rounded-2xl p-4 md:p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <Field label="Day Title" value={day.title} onChange={v => set({ title: v })} placeholder="e.g. Arrival Day" />
-          <Field label="City" value={day.city} onChange={v => set({ city: v })} placeholder="e.g. Paris" />
-        </div>
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <Field label="Date" value={day.date} onChange={v => set({ date: v })} type="date" />
-          <Field label="High Temp" value={day.weather.tempHigh} onChange={v => set({ weather: { ...day.weather, tempHigh: v } })} placeholder="e.g. 75°F" />
-          <Field label="Low Temp" value={day.weather.tempLow} onChange={v => set({ weather: { ...day.weather, tempLow: v } })} placeholder="e.g. 58°F" />
-        </div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-500">Weather</span>
+      <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
+        <summary className="flex items-center justify-between px-5 py-3 cursor-pointer font-semibold text-accent-teal hover:bg-navy-light transition-colors">
+          <span>{[day.date ? day.date.slice(5).replace('-', '/') : null, day.city, day.title].filter(Boolean).join(' · ') || 'Day Info'}</span>
           <button
-            onClick={fetchWeather}
+            onClick={e => { e.preventDefault(); fetchWeather() }}
             disabled={fetchingWeather || !day.city || !day.date}
-            className="text-xs px-2 py-0.5 rounded bg-navy-light hover:bg-navy-deep text-gray-300 disabled:opacity-40 transition-colors"
+            className="text-xs px-2 py-0.5 rounded bg-navy-light hover:bg-navy-deep text-gray-300 disabled:opacity-40 transition-colors font-normal"
           >
-            {fetchingWeather ? 'Fetching…' : '↻ Auto-fill'}
+            {fetchingWeather ? '…' : '↻ Weather'}
           </button>
+        </summary>
+        <div className="px-5 pb-5 pt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            <Field label="Date" value={day.date} onChange={v => set({ date: v })} type="date" />
+            <Field label="City" value={day.city} onChange={v => set({ city: v })} placeholder="e.g. Paris" />
+            <Field label="Title" value={day.title} onChange={v => set({ title: v })} placeholder="e.g. Arrival Day" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="High" value={day.weather.tempHigh} onChange={v => set({ weather: { ...day.weather, tempHigh: v } })} placeholder="75°F" />
+            <Field label="Low" value={day.weather.tempLow} onChange={v => set({ weather: { ...day.weather, tempLow: v } })} placeholder="58°F" />
+            <Field label="Condition" value={day.weather.condition} onChange={v => set({ weather: { ...day.weather, condition: v } })} placeholder="Sunny" />
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Condition" value={day.weather.condition} onChange={v => set({ weather: { ...day.weather, condition: v } })} placeholder="e.g. Sunny, Rainy" />
-          <Field label="Weather Notes" value={day.weather.notes} onChange={v => set({ weather: { ...day.weather, notes: v } })} placeholder="Bring an umbrella" />
-        </div>
-      </div>
+      </details>
 
       {/* Map + Activities */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

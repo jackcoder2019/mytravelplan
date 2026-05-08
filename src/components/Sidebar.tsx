@@ -121,9 +121,12 @@ export default function Sidebar({
               onClick={() => onSelectDay(day.id)}
             >
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-gray-400">Day {i + 1}{day.date ? ` · ${day.date}` : ''}</div>
-                <div className="text-sm font-medium truncate">{day.title || `Day ${i + 1}`}</div>
-                {day.city && <div className="text-xs text-accent-teal truncate">{day.city}</div>}
+                <div className="text-sm truncate">
+                  {[
+                    day.date ? day.date.slice(5).replace('-', '/') : null,
+                    day.city || null,
+                  ].filter(Boolean).join(' · ') || '—'}
+                </div>
               </div>
               {itinerary.days.length > 1 && (
                 <button
