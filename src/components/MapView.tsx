@@ -50,9 +50,9 @@ async function geocode(query: string): Promise<L.LatLng | null> {
 }
 
 interface AddressPin { label: string; address: string; color: 'blue' | 'green' | 'orange'; number?: number }
-interface Props { addresses: AddressPin[]; city?: string }
+interface Props { addresses: AddressPin[]; city?: string; dayId: string }
 
-export default function MapView({ addresses, city }: Props) {
+export default function MapView({ addresses, city, dayId }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
@@ -60,8 +60,8 @@ export default function MapView({ addresses, city }: Props) {
   const cityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const addressesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Stable keys so effects only re-run when values actually change
-  const addressesKey = addresses.map(a => a.address).join('|')
+  // Include dayId so effects re-run when the active day changes (even if city/addresses look the same)
+  const addressesKey = `${dayId}|${addresses.map(a => a.address).join('|')}`
   const addressesRef = useRef(addresses)
   addressesRef.current = addresses
 
@@ -87,7 +87,7 @@ export default function MapView({ addresses, city }: Props) {
         .bindPopup(`<strong>${city}</strong>`)
       map.flyTo(latlng, 11)
     }, 600)
-  }, [city]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [city, dayId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Addresses effect — only re-runs when the set of addresses changes
   useEffect(() => {

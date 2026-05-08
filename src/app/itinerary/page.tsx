@@ -65,16 +65,33 @@ export default function ItineraryPage() {
   }, [recordId, scheduleSave])
 
   const addDay = () => {
+    const prev = itinerary.days[itinerary.days.length - 1]
     const newDay = emptyDay(itinerary.days.length + 1)
+    if (prev) {
+      newDay.city = prev.city
+      if (prev.date) {
+        const next = new Date(prev.date)
+        next.setDate(next.getDate() + 1)
+        newDay.date = next.toISOString().slice(0, 10)
+      }
+    }
     const updated = { ...itinerary, days: [...itinerary.days, newDay] }
     updateItinerary(updated)
     setActiveDayId(newDay.id)
   }
 
   const removeDay = (id: string) => {
+    const idx = itinerary.days.findIndex(d => d.id === id)
     const remaining = itinerary.days.filter(d => d.id !== id)
     if (remaining.length === 0) return
-    const updated = { ...itinerary, days: remaining }
+    // Shift dates of all days that follow the deleted one back by 1 day
+    const shifted = remaining.map((d, i) => {
+      if (i < idx || !d.date) return d
+      const prev = new Date(d.date)
+      prev.setDate(prev.getDate() - 1)
+      return { ...d, date: prev.toISOString().slice(0, 10) }
+    })
+    const updated = { ...itinerary, days: shifted }
     updateItinerary(updated)
     if (activeDayId === id) setActiveDayId(remaining[0].id)
   }
