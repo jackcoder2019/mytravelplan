@@ -82,11 +82,11 @@ export default function Sidebar({
     <>
       {/* Mobile backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={onClose} />
+        <div className="fixed inset-0 z-[9998] bg-black/50 md:hidden" onClick={onClose} />
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-50
+        fixed inset-y-0 left-0 z-[9999]
         md:relative md:inset-auto md:z-auto
         w-64 flex-shrink-0 h-screen bg-navy-mid flex flex-col border-r border-navy-light
         transform transition-transform duration-300 ease-in-out
