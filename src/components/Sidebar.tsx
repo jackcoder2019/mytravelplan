@@ -111,6 +111,14 @@ export default function Sidebar({
           )}
         </div>
 
+        {/* Overview */}
+        <div
+          onClick={() => onSelectDay('overview')}
+          className={`flex items-center px-4 py-2 cursor-pointer text-sm border-b border-navy-light hover:bg-navy-light transition-colors ${activeDayId === 'overview' ? 'bg-navy-light text-accent-teal' : 'text-gray-400'}`}
+        >
+          Overview
+        </div>
+
         {/* Day list */}
         <div ref={dayListRef} className="flex-1 overflow-y-auto py-2">
           {itinerary.days.map((day, i) => (

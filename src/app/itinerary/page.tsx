@@ -6,6 +6,7 @@ import { loadItinerary, saveItinerary, subscribeToItinerary } from '@/lib/api'
 import { type Itinerary, type SaveStatus, emptyDay, defaultItinerary } from '@/lib/types'
 import Sidebar from '@/components/Sidebar'
 import DayView from '@/components/DayView'
+import OverviewView from '@/components/OverviewView'
 
 export default function ItineraryPage() {
   const router = useRouter()
@@ -136,7 +137,9 @@ export default function ItineraryPage() {
           >☰</button>
           <span className="text-accent-teal font-semibold truncate">{itinerary.tripName || 'Travel Plan'}</span>
         </div>
-        {activeDay ? (
+        {activeDayId === 'overview' ? (
+          <OverviewView itinerary={itinerary} />
+        ) : activeDay ? (
           <DayView
             day={activeDay}
             onChange={updated => {

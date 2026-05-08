@@ -33,10 +33,9 @@ export default function ActivityList({ activities, onChange }: Props) {
   const [open, setOpen] = useState(true)
   const sorted = [...activities].sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours))
 
-  const preview = sorted
+  const previewLines = sorted
     .map(a => [a.hours, a.name].filter(Boolean).join(' '))
     .filter(Boolean)
-    .join(' · ')
 
   return (
     <div className="bg-navy-mid rounded-2xl overflow-hidden">
@@ -52,8 +51,12 @@ export default function ActivityList({ activities, onChange }: Props) {
           <span className="font-semibold text-accent-teal">
             Activities{activities.length > 0 ? ` (${activities.length})` : ''}
           </span>
-          {!open && preview && (
-            <p className="text-xs text-gray-400 truncate mt-0.5">{preview}</p>
+          {!open && previewLines.length > 0 && (
+            <div className="mt-0.5">
+              {previewLines.map((line, i) => (
+                <p key={i} className="text-xs text-gray-400 truncate">{line}</p>
+              ))}
+            </div>
           )}
         </div>
         <button
