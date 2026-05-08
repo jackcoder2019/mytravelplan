@@ -12,6 +12,16 @@ const schema = a.schema({
     .authorization(allow => [
       allow.owner(),
     ]),
+
+  Feedback: a
+    .model({
+      comment: a.string().required(),
+      userEmail: a.string(),
+    })
+    .authorization(allow => [
+      allow.authenticated().to(['create', 'list', 'get']),
+      allow.owner().to(['delete']),
+    ]),
 })
 
 export type Schema = ClientSchema<typeof schema>

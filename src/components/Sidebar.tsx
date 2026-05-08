@@ -146,9 +146,14 @@ export default function Sidebar({
 
         {/* Bottom actions */}
         <div className="p-4 border-t border-navy-light space-y-2">
-          <button onClick={() => setShowShare(true)} className="w-full py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm transition-colors">
-            Share
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setShowShare(true)} className="flex-1 py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm transition-colors">
+              Share
+            </button>
+            <button onClick={() => window.open('/feedback', '_blank')} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">
+              Feedback
+            </button>
+          </div>
           <div className="flex gap-2">
             <button onClick={exportData} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">Export</button>
             <label className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm text-center cursor-pointer transition-colors">
