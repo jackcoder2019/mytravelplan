@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { type Day } from '@/lib/types'
 import { parseStartHour } from '@/lib/utils'
+import { useDemo } from '@/lib/demo-context'
 import ActivityList from './ActivityList'
 import LodgingCard from './LodgingCard'
 import DiningCard from './DiningCard'
@@ -18,6 +19,7 @@ interface Props {
 function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string
 }) {
+  const isDemo = useDemo()
   return (
     <div>
       <label className="text-xs text-gray-400 block mb-0.5">{label}</label>
@@ -27,12 +29,14 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        readOnly={isDemo}
       />
     </div>
   )
 }
 
 export default function DayView({ day, onChange }: Props) {
+  const isDemo = useDemo()
   const set = (patch: Partial<Day>) => onChange({ ...day, ...patch })
   const [fetchingWeather, setFetchingWeather] = useState(false)
   const dayRef = useRef(day)
@@ -82,13 +86,15 @@ export default function DayView({ day, onChange }: Props) {
       <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
         <summary className="flex items-center justify-between px-5 py-3 cursor-pointer font-semibold text-accent-teal hover:bg-navy-light transition-colors">
           <span>{[day.date ? day.date.slice(5).replace('-', '/') : null, day.city, day.title].filter(Boolean).join(' · ') || 'Day Info'}</span>
-          <button
-            onClick={e => { e.preventDefault(); fetchWeather() }}
-            disabled={fetchingWeather || !day.city || !day.date}
-            className="text-xs px-2 py-0.5 rounded bg-navy-light hover:bg-navy-deep text-gray-300 disabled:opacity-40 transition-colors font-normal"
-          >
-            {fetchingWeather ? '…' : '↻ Weather'}
-          </button>
+          {!isDemo && (
+            <button
+              onClick={e => { e.preventDefault(); fetchWeather() }}
+              disabled={fetchingWeather || !day.city || !day.date}
+              className="text-xs px-2 py-0.5 rounded bg-navy-light hover:bg-navy-deep text-gray-300 disabled:opacity-40 transition-colors font-normal"
+            >
+              {fetchingWeather ? '…' : '↻ Weather'}
+            </button>
+          )}
         </summary>
         <div className="px-5 pb-5 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">

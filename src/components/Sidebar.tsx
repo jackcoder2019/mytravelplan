@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { handleSignOut } from '@/lib/auth'
+import { useDemo } from '@/lib/demo-context'
 import { type Itinerary, type SaveStatus } from '@/lib/types'
 import ShareModal from './ShareModal'
 
@@ -42,6 +43,7 @@ export default function Sidebar({
   isOpen, onSelectDay, onAddDay, onRemoveDay, onTripNameChange,
   onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose,
 }: Props) {
+  const isDemo = useDemo()
   const [showShare, setShowShare] = useState(false)
   const dayListRef = useRef<HTMLDivElement>(null)
 
@@ -104,6 +106,7 @@ export default function Sidebar({
               value={itinerary.tripName}
               onChange={e => onTripNameChange(e.target.value)}
               placeholder="Trip Name"
+              readOnly={isDemo}
             />
           </div>
           {saveStatus !== 'idle' && (
@@ -136,7 +139,7 @@ export default function Sidebar({
                   ].filter(Boolean).join(' · ') || '—'}
                 </div>
               </div>
-              {itinerary.days.length > 1 && (
+              {!isDemo && itinerary.days.length > 1 && (
                 <button
                   onClick={e => { e.stopPropagation(); onRemoveDay(day.id) }}
                   className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:pointer-events-none md:group-hover:pointer-events-auto text-gray-500 hover:text-accent-red active:text-accent-red ml-2 text-lg leading-none"
@@ -147,31 +150,41 @@ export default function Sidebar({
         </div>
 
         {/* Add day */}
-        <button
-          onClick={onAddDay}
-          className="mx-4 my-2 py-2 rounded-lg border border-dashed border-navy-light text-gray-400 hover:text-accent-teal hover:border-accent-teal text-sm transition-colors"
-        >+ Add Day</button>
+        {!isDemo && (
+          <button
+            onClick={onAddDay}
+            className="mx-4 my-2 py-2 rounded-lg border border-dashed border-navy-light text-gray-400 hover:text-accent-teal hover:border-accent-teal text-sm transition-colors"
+          >+ Add Day</button>
+        )}
 
         {/* Bottom actions */}
         <div className="p-4 border-t border-navy-light space-y-2">
-          <div className="flex gap-2">
-            <button onClick={() => setShowShare(true)} className="flex-1 py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm transition-colors">
-              Share
-            </button>
-            <button onClick={() => window.open('/feedback', '_blank')} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">
-              Feedback
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={exportData} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">Export</button>
-            <label className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm text-center cursor-pointer transition-colors">
-              Import
-              <input type="file" accept=".json" className="hidden" onChange={importData} />
-            </label>
-          </div>
-          <button onClick={handleSignOut} className="w-full py-1.5 rounded-lg text-gray-500 hover:text-accent-red text-sm transition-colors">
-            Logout
-          </button>
+          {isDemo ? (
+            <a href="/" className="block w-full py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm text-center transition-colors">
+              Sign in to edit
+            </a>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <button onClick={() => setShowShare(true)} className="flex-1 py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm transition-colors">
+                  Share
+                </button>
+                <button onClick={() => window.open('/feedback', '_blank')} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">
+                  Feedback
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={exportData} className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm transition-colors">Export</button>
+                <label className="flex-1 py-1.5 rounded-lg bg-navy-light hover:bg-opacity-80 text-gray-300 text-sm text-center cursor-pointer transition-colors">
+                  Import
+                  <input type="file" accept=".json" className="hidden" onChange={importData} />
+                </label>
+              </div>
+              <button onClick={handleSignOut} className="w-full py-1.5 rounded-lg text-gray-500 hover:text-accent-red text-sm transition-colors">
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </aside>
 

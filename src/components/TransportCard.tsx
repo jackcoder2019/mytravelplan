@@ -1,5 +1,6 @@
 'use client'
 import { type Transportation } from '@/lib/types'
+import { useDemo } from '@/lib/demo-context'
 
 interface Props { transport: Transportation; onChange: (t: Transportation) => void }
 
@@ -8,15 +9,17 @@ const MODES = ['Flight', 'Train', 'Car', 'Bus', 'Ferry', 'Walk', 'Other']
 function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string
 }) {
+  const isDemo = useDemo()
   return (
     <div>
       <label className="text-xs text-gray-400">{label}</label>
-      <input type={type} className="editable text-sm mt-0.5" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      <input type={type} className="editable text-sm mt-0.5" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} readOnly={isDemo} />
     </div>
   )
 }
 
 export default function TransportCard({ transport, onChange }: Props) {
+  const isDemo = useDemo()
   const set = (patch: Partial<Transportation>) => onChange({ ...transport, ...patch })
   return (
     <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
@@ -27,7 +30,7 @@ export default function TransportCard({ transport, onChange }: Props) {
         <div>
           <label className="text-xs text-gray-400">Mode</label>
           <select className="w-full bg-transparent border-b border-gray-600 text-sm mt-0.5 outline-none focus:border-accent-teal"
-            value={transport.mode} onChange={e => set({ mode: e.target.value })}>
+            value={transport.mode} onChange={e => set({ mode: e.target.value })} disabled={isDemo}>
             <option value="" className="bg-navy-mid">Select mode</option>
             {MODES.map(m => <option key={m} value={m} className="bg-navy-mid">{m}</option>)}
           </select>

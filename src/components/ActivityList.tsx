@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { type Activity } from '@/lib/types'
 import { parseStartHour } from '@/lib/utils'
+import { useDemo } from '@/lib/demo-context'
 
 interface Props {
   activities: Activity[]
@@ -9,8 +10,8 @@ interface Props {
 }
 
 
-function Field({ value, onChange, placeholder, className = '' }: {
-  value: string; onChange: (v: string) => void; placeholder: string; className?: string
+function Field({ value, onChange, placeholder, className = '', readOnly = false }: {
+  value: string; onChange: (v: string) => void; placeholder: string; className?: string; readOnly?: boolean
 }) {
   return (
     <input
@@ -18,11 +19,13 @@ function Field({ value, onChange, placeholder, className = '' }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
+      readOnly={readOnly}
     />
   )
 }
 
 export default function ActivityList({ activities, onChange }: Props) {
+  const isDemo = useDemo()
   const add = () => {
     onChange([...activities, { id: crypto.randomUUID(), name: '', highlight: '', hours: '', address: '', notes: '' }])
   }
@@ -59,10 +62,12 @@ export default function ActivityList({ activities, onChange }: Props) {
             </div>
           )}
         </div>
-        <button
-          onClick={e => { e.stopPropagation(); add() }}
-          className="text-xs px-3 py-1 bg-accent-red hover:bg-red-700 rounded-lg transition-colors"
-        >+ Add</button>
+        {!isDemo && (
+          <button
+            onClick={e => { e.stopPropagation(); add() }}
+            className="text-xs px-3 py-1 bg-accent-red hover:bg-red-700 rounded-lg transition-colors"
+          >+ Add</button>
+        )}
       </div>
 
       {open && (
@@ -72,15 +77,17 @@ export default function ActivityList({ activities, onChange }: Props) {
           )}
           {sorted.map(a => (
             <div key={a.id} className="border border-navy-light rounded-xl p-3 space-y-2 group relative">
-              <button
-                onClick={() => remove(a.id)}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-accent-red transition"
-              >×</button>
-              <Field value={a.name} onChange={v => update(a.id, { name: v })} placeholder="Activity name" className="font-medium" />
-              <Field value={a.highlight} onChange={v => update(a.id, { highlight: v })} placeholder="Highlight / description" />
-              <Field value={a.hours} onChange={v => update(a.id, { hours: v })} placeholder="Hours (e.g. 9am–12pm)" />
-              <Field value={a.address} onChange={v => update(a.id, { address: v })} placeholder="Address (for map pin)" />
-              <Field value={a.notes} onChange={v => update(a.id, { notes: v })} placeholder="Notes" />
+              {!isDemo && (
+                <button
+                  onClick={() => remove(a.id)}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-accent-red transition"
+                >×</button>
+              )}
+              <Field value={a.name} onChange={v => update(a.id, { name: v })} placeholder="Activity name" className="font-medium" readOnly={isDemo} />
+              <Field value={a.highlight} onChange={v => update(a.id, { highlight: v })} placeholder="Highlight / description" readOnly={isDemo} />
+              <Field value={a.hours} onChange={v => update(a.id, { hours: v })} placeholder="Hours (e.g. 9am–12pm)" readOnly={isDemo} />
+              <Field value={a.address} onChange={v => update(a.id, { address: v })} placeholder="Address (for map pin)" readOnly={isDemo} />
+              <Field value={a.notes} onChange={v => update(a.id, { notes: v })} placeholder="Notes" readOnly={isDemo} />
             </div>
           ))}
         </div>

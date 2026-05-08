@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { getAuthUser } from '@/lib/auth'
 import { loadItinerary, saveItinerary, subscribeToItinerary } from '@/lib/api'
 import { type Itinerary, type SaveStatus, emptyDay, defaultItinerary } from '@/lib/types'
+import { getDemoItinerary } from '@/lib/demo'
+import { DemoContext } from '@/lib/demo-context'
 import Sidebar from '@/components/Sidebar'
 import DayView from '@/components/DayView'
 import OverviewView from '@/components/OverviewView'
@@ -19,11 +21,23 @@ export default function ItineraryPage() {
   const [shareLinkEnabled, setShareLinkEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [demoMode, setDemoMode] = useState(false)
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>()
   const lastSavedBy = useRef<string>('self')
 
   useEffect(() => {
+    const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true'
+    setDemoMode(isDemo)
+
+    if (isDemo) {
+      const demo = getDemoItinerary()
+      setItinerary(demo)
+      setActiveDayId(demo.days[0].id)
+      setLoading(false)
+      return
+    }
+
     getAuthUser().then(user => {
       if (!user) { router.replace('/'); return }
       loadItinerary().then(({ id, itinerary: data, sharedWith: sw, shareToken: st, shareLinkEnabled: sle }) => {
@@ -61,9 +75,10 @@ export default function ItineraryPage() {
   }, [recordId])
 
   const updateItinerary = useCallback((updated: Itinerary) => {
+    if (demoMode) return
     setItinerary(updated)
     if (recordId) scheduleSave(updated)
-  }, [recordId, scheduleSave])
+  }, [recordId, scheduleSave, demoMode])
 
   const addDay = () => {
     const prev = itinerary.days[itinerary.days.length - 1]
@@ -85,7 +100,6 @@ export default function ItineraryPage() {
     const idx = itinerary.days.findIndex(d => d.id === id)
     const remaining = itinerary.days.filter(d => d.id !== id)
     if (remaining.length === 0) return
-    // Shift dates of all days that follow the deleted one back by 1 day
     const shifted = remaining.map((d, i) => {
       if (i < idx || !d.date) return d
       const prev = new Date(d.date)
@@ -108,49 +122,58 @@ export default function ItineraryPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        itinerary={itinerary}
-        activeDayId={activeDayId}
-        saveStatus={saveStatus}
-        recordId={recordId}
-        sharedWith={sharedWith}
-        shareToken={shareToken}
-        shareLinkEnabled={shareLinkEnabled}
-        isOpen={sidebarOpen}
-        onSelectDay={id => { setActiveDayId(id); setSidebarOpen(false) }}
-        onAddDay={addDay}
-        onRemoveDay={removeDay}
-        onTripNameChange={name => updateItinerary({ ...itinerary, tripName: name })}
-        onSharedWithChange={setSharedWith}
-        onShareTokenChange={setShareToken}
-        onShareLinkEnabledChange={setShareLinkEnabled}
-        onClose={() => setSidebarOpen(false)}
-      />
-      <main className="flex-1 overflow-y-auto bg-navy-deep p-4 md:p-6">
-        {/* Mobile top bar */}
-        <div className="flex items-center gap-3 mb-4 md:hidden">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg bg-navy-mid text-gray-300 hover:text-white text-xl leading-none"
-            aria-label="Open menu"
-          >☰</button>
-          <span className="text-accent-teal font-semibold truncate">{itinerary.tripName || 'Travel Plan'}</span>
-        </div>
-        {activeDayId === 'overview' ? (
-          <OverviewView itinerary={itinerary} />
-        ) : activeDay ? (
-          <DayView
-            day={activeDay}
-            onChange={updated => {
-              const days = itinerary.days.map(d => d.id === updated.id ? updated : d)
-              updateItinerary({ ...itinerary, days })
-            }}
-          />
-        ) : (
-          <div className="text-gray-500 text-center mt-20">Select or add a day to get started.</div>
-        )}
-      </main>
-    </div>
+    <DemoContext.Provider value={demoMode}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar
+          itinerary={itinerary}
+          activeDayId={activeDayId}
+          saveStatus={saveStatus}
+          recordId={recordId}
+          sharedWith={sharedWith}
+          shareToken={shareToken}
+          shareLinkEnabled={shareLinkEnabled}
+          isOpen={sidebarOpen}
+          onSelectDay={id => { setActiveDayId(id); setSidebarOpen(false) }}
+          onAddDay={addDay}
+          onRemoveDay={removeDay}
+          onTripNameChange={name => updateItinerary({ ...itinerary, tripName: name })}
+          onSharedWithChange={setSharedWith}
+          onShareTokenChange={setShareToken}
+          onShareLinkEnabledChange={setShareLinkEnabled}
+          onClose={() => setSidebarOpen(false)}
+        />
+        <main className="flex-1 overflow-y-auto bg-navy-deep p-4 md:p-6">
+          {/* Mobile top bar */}
+          <div className="flex items-center gap-3 mb-4 md:hidden">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg bg-navy-mid text-gray-300 hover:text-white text-xl leading-none"
+              aria-label="Open menu"
+            >☰</button>
+            <span className="text-accent-teal font-semibold truncate">{itinerary.tripName || 'Travel Plan'}</span>
+          </div>
+          {/* Demo banner */}
+          {demoMode && (
+            <div className="mb-4 px-4 py-2 rounded-xl bg-accent-teal/10 border border-accent-teal/30 text-sm flex items-center justify-between">
+              <span className="text-accent-teal">Browsing in demo mode — read only</span>
+              <a href="/" className="text-accent-teal underline underline-offset-2 hover:opacity-80 ml-4 whitespace-nowrap">Sign in</a>
+            </div>
+          )}
+          {activeDayId === 'overview' ? (
+            <OverviewView itinerary={itinerary} />
+          ) : activeDay ? (
+            <DayView
+              day={activeDay}
+              onChange={updated => {
+                const days = itinerary.days.map(d => d.id === updated.id ? updated : d)
+                updateItinerary({ ...itinerary, days })
+              }}
+            />
+          ) : (
+            <div className="text-gray-500 text-center mt-20">Select or add a day to get started.</div>
+          )}
+        </main>
+      </div>
+    </DemoContext.Provider>
   )
 }

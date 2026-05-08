@@ -1,13 +1,15 @@
 'use client'
 import { type Lodging } from '@/lib/types'
+import { useDemo } from '@/lib/demo-context'
 
 interface Props { lodging: Lodging; onChange: (l: Lodging) => void }
 
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  const isDemo = useDemo()
   return (
     <div>
       <label className="text-xs text-gray-400">{label}</label>
-      <input type={type} className="editable text-sm mt-0.5" value={value} onChange={e => onChange(e.target.value)} />
+      <input type={type} className="editable text-sm mt-0.5" value={value} onChange={e => onChange(e.target.value)} readOnly={isDemo} />
     </div>
   )
 }
