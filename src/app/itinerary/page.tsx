@@ -123,7 +123,7 @@ export default function ItineraryPage() {
 
   return (
     <DemoContext.Provider value={demoMode}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-[100dvh] overflow-hidden">
         <Sidebar
           itinerary={itinerary}
           activeDayId={activeDayId}

@@ -88,7 +88,7 @@ export default function Sidebar({
       <aside className={`
         fixed inset-y-0 left-0 z-[9999]
         md:relative md:inset-auto md:z-auto
-        w-64 flex-shrink-0 h-screen bg-navy-mid flex flex-col border-r border-navy-light
+        w-64 flex-shrink-0 h-[100dvh] bg-navy-mid flex flex-col border-r border-navy-light
         transform transition-transform duration-300 ease-in-out
         md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -158,7 +158,7 @@ export default function Sidebar({
         )}
 
         {/* Bottom actions */}
-        <div className="p-4 border-t border-navy-light space-y-2">
+        <div className="p-4 border-t border-navy-light space-y-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {isDemo ? (
             <a href="/" className="block w-full py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm text-center transition-colors">
               Sign in to edit
