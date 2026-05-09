@@ -33,11 +33,14 @@ export interface Dining {
 }
 
 export interface Transportation {
+  id: string
   mode: string
   from: string
   to: string
-  departure: string
-  arrival: string
+  departureDate: string
+  departureTime: string
+  arrivalDate: string
+  arrivalTime: string
   confirmation: string
   notes: string
 }
@@ -51,7 +54,7 @@ export interface Day {
   activities: Activity[]
   lodging: Lodging
   dining: Dining[]
-  transportation: Transportation
+  transportation: Transportation[]
 }
 
 export interface Itinerary {
@@ -71,7 +74,7 @@ export function emptyDay(index: number): Day {
     activities: [],
     lodging: { name: '', address: '', checkIn: '', checkOut: '', confirmation: '', notes: '' },
     dining: [],
-    transportation: { mode: '', from: '', to: '', departure: '', arrival: '', confirmation: '', notes: '' },
+    transportation: [],
   }
 }
 

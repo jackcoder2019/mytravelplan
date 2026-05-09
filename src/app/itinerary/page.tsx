@@ -137,6 +137,7 @@ export default function ItineraryPage() {
           onAddDay={addDay}
           onRemoveDay={removeDay}
           onTripNameChange={name => updateItinerary({ ...itinerary, tripName: name })}
+          onImport={data => { updateItinerary(data); setActiveDayId(data.days[0]?.id ?? '') }}
           onSharedWithChange={setSharedWith}
           onShareTokenChange={setShareToken}
           onShareLinkEnabledChange={setShareLinkEnabled}

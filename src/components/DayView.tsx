@@ -125,7 +125,7 @@ export default function DayView({ day, onChange }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <LodgingCard lodging={day.lodging} onChange={lodging => set({ lodging })} />
         <DiningCard dining={day.dining} onChange={dining => set({ dining })} />
-        <TransportCard transport={day.transportation} onChange={transportation => set({ transportation })} />
+        <TransportCard transport={Array.isArray(day.transportation) ? day.transportation : []} onChange={transportation => set({ transportation })} />
       </div>
     </div>
   )

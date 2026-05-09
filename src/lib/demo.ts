@@ -19,7 +19,7 @@ export function getDemoItinerary(): Itinerary {
           { id: 'demo-d1', name: 'Café de Flore', meal: 'Breakfast', address: '172 Blvd Saint-Germain, Paris', hours: '9am', notes: 'Classic Parisian café' },
           { id: 'demo-d2', name: 'Le Cinq', meal: 'Dinner', address: '31 Av. George V, Paris', hours: '7:30pm', notes: 'Reservation required' },
         ],
-        transportation: { mode: 'Flight', from: 'New York JFK', to: 'Paris CDG', departure: '2026-06-30T22:00', arrival: '2026-07-01T12:00', confirmation: 'AF447', notes: 'Terminal 2E, seat 12A' },
+        transportation: [{ id: 'demo-t1', mode: 'Flight', from: 'New York JFK', to: 'Paris CDG', departureDate: '2026-06-30', departureTime: '22:00', arrivalDate: '2026-07-01', arrivalTime: '12:00', confirmation: 'AF447', notes: 'Terminal 2E, seat 12A' }],
       },
       {
         id: 'demo-day-2',
@@ -36,7 +36,7 @@ export function getDemoItinerary(): Itinerary {
           { id: 'demo-d3', name: 'Angelina', meal: 'Lunch', address: '226 Rue de Rivoli, Paris', hours: '12pm', notes: 'Famous hot chocolate' },
           { id: 'demo-d4', name: 'Le Moulin de la Galette', meal: 'Dinner', address: '83 Rue Lepic, Paris', hours: '7pm', notes: '' },
         ],
-        transportation: { mode: '', from: '', to: '', departure: '', arrival: '', confirmation: '', notes: '' },
+        transportation: [],
       },
       {
         id: 'demo-day-3',
@@ -52,7 +52,7 @@ export function getDemoItinerary(): Itinerary {
         dining: [
           { id: 'demo-d5', name: 'Dishoom', meal: 'Dinner', address: '12 Upper St Martin\'s Ln, London', hours: '7pm', notes: 'Queue early or book ahead' },
         ],
-        transportation: { mode: 'Train', from: 'Paris Gare du Nord', to: 'London St Pancras', departure: '2026-07-03T11:13', arrival: '2026-07-03T12:30', confirmation: 'EU-ST-9921', notes: 'Eurostar, car 12 seat 34' },
+        transportation: [{ id: 'demo-t3', mode: 'Train', from: 'Paris Gare du Nord', to: 'London St Pancras', departureDate: '2026-07-03', departureTime: '11:13', arrivalDate: '2026-07-03', arrivalTime: '12:30', confirmation: 'EU-ST-9921', notes: 'Eurostar, car 12 seat 34' }],
       },
     ],
   }

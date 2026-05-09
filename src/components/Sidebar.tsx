@@ -18,6 +18,7 @@ interface Props {
   onAddDay: () => void
   onRemoveDay: (id: string) => void
   onTripNameChange: (name: string) => void
+  onImport: (itinerary: Itinerary) => void
   onSharedWithChange: (sw: string[]) => void
   onShareTokenChange: (t: string | null) => void
   onShareLinkEnabledChange: (v: boolean) => void
@@ -40,7 +41,7 @@ const statusColor: Record<SaveStatus, string> = {
 export default function Sidebar({
   itinerary, activeDayId, saveStatus, recordId,
   sharedWith, shareToken, shareLinkEnabled,
-  isOpen, onSelectDay, onAddDay, onRemoveDay, onTripNameChange,
+  isOpen, onSelectDay, onAddDay, onRemoveDay, onTripNameChange, onImport,
   onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose,
 }: Props) {
   const isDemo = useDemo()
@@ -69,9 +70,7 @@ export default function Sidebar({
       try {
         const data = JSON.parse(ev.target?.result as string)
         if (data.tripName && Array.isArray(data.days)) {
-          onTripNameChange(data.tripName)
-          // Full itinerary replacement triggers via parent
-          window.dispatchEvent(new CustomEvent('import-itinerary', { detail: data }))
+          onImport(data)
         }
       } catch { alert('Invalid JSON file') }
     }
@@ -124,7 +123,14 @@ export default function Sidebar({
 
         {/* Day list */}
         <div ref={dayListRef} className="flex-1 overflow-y-auto py-2">
-          {itinerary.days.map((day, i) => (
+          {[...itinerary.days]
+            .sort((a, b) => {
+              if (!a.date && !b.date) return 0
+              if (!a.date) return 1
+              if (!b.date) return -1
+              return a.date.localeCompare(b.date)
+            })
+            .map((day, i) => (
             <div
               key={day.id}
               data-active={day.id === activeDayId}
