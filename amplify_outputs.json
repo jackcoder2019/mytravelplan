@@ -1,0 +1,32 @@
+{
+  "version": "1.4",
+  "auth": {
+    "user_pool_id": "us-west-2_U4A8qTFz0",
+    "user_pool_client_id": "2f6napommpdu266v9cvrdgobsn",
+    "identity_pool_id": "us-west-2:2aa68405-994c-47d9-b661-962614cfc31c",
+    "aws_region": "us-west-2",
+    "username_attributes": ["email"],
+    "standard_required_attributes": ["email"],
+    "user_verification_types": ["email"],
+    "unauthenticated_identities_enabled": true,
+    "mfa_configuration": "NONE",
+    "mfa_methods": [],
+    "password_policy": {
+      "min_length": 8,
+      "require_numbers": true,
+      "require_lowercase": true,
+      "require_uppercase": true,
+      "require_symbols": true
+    }
+  },
+  "data": {
+    "aws_region": "us-west-2",
+    "url": "https://jyejtbortrgx7fxz2e6keascpq.appsync-api.us-west-2.amazonaws.com/graphql",
+    "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
+    "authorization_types": ["AWS_IAM"]
+  },
+  "custom": {
+    "reminderLambdaArn": "arn:aws:lambda:us-west-2:528130062348:function:amplify-df61mvnbr1sc6-mai-emailreminderlambda3A26A-x7IdtWDXUtyv",
+    "schedulerRoleArn": "arn:aws:iam::528130062348:role/amplify-df61mvnbr1sc6-mai-SchedulerLambdaRole38A4F6-hRDLHT2Kv6oA"
+  }
+}
