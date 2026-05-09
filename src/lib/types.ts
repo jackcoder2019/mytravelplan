@@ -32,6 +32,12 @@ export interface Dining {
   notes: string
 }
 
+export interface TransportReminder {
+  scheduledAt: string  // ISO datetime (UTC)
+  email: string
+  status: 'pending' | 'sent' | 'failed'
+}
+
 export interface Transportation {
   id: string
   mode: string
@@ -43,6 +49,7 @@ export interface Transportation {
   arrivalTime: string
   confirmation: string
   notes: string
+  reminder?: TransportReminder
 }
 
 export interface Day {

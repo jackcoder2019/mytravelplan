@@ -1,9 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { type Transportation } from '@/lib/types'
+import { type Transportation, type TransportReminder } from '@/lib/types'
 import { useDemo } from '@/lib/demo-context'
 
-interface Props { transport: Transportation[]; onChange: (t: Transportation[]) => void }
+interface Props { transport: Transportation[]; onChange: (t: Transportation[]) => void; userEmail?: string }
 
 const MODES = ['Flight', 'Train', 'Car', 'Bus', 'Ferry', 'Walk', 'Other']
 
@@ -19,7 +19,98 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   )
 }
 
-export default function TransportCard({ transport, onChange }: Props) {
+function ReminderSection({ transport, onUpdate }: { transport: Transportation; onUpdate: (patch: Partial<Transportation>) => void }) {
+  const [reminderAt, setReminderAt] = useState(transport.reminder?.scheduledAt?.slice(0, 16) ?? '')
+  const [email, setEmail] = useState(transport.reminder?.email ?? '')
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  const existing = transport.reminder
+
+  const setReminder = async () => {
+    if (!reminderAt || !email) return
+    setSaving(true); setMsg('')
+    try {
+      const label = [transport.mode, transport.from, transport.to].filter(Boolean).join(' · ')
+      const resp = await fetch('/api/reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transportId: transport.id,
+          email,
+          scheduledAt: reminderAt,
+          subject: `Travel reminder: ${label}`,
+          body: `Reminder for your upcoming trip:\n\n${label}\nDepart: ${transport.departureDate} ${transport.departureTime}\nArrive: ${transport.arrivalDate} ${transport.arrivalTime}\nConfirmation: ${transport.confirmation}`,
+        }),
+      })
+      if (!resp.ok) throw new Error((await resp.json()).error)
+      onUpdate({ reminder: { scheduledAt: reminderAt, email, status: 'pending' } })
+      setMsg('Reminder set!')
+    } catch (e: any) {
+      setMsg(`Failed: ${e.message}`)
+    } finally { setSaving(false) }
+  }
+
+  const cancelReminder = async () => {
+    setSaving(true); setMsg('')
+    try {
+      await fetch('/api/reminder', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transportId: transport.id }),
+      })
+      onUpdate({ reminder: undefined })
+      setReminderAt(''); setMsg('')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="border-t border-navy-light pt-3 space-y-2">
+      <p className="text-xs text-gray-400 font-medium">Reminder email</p>
+      {existing?.status === 'pending' ? (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-accent-teal">
+            Scheduled for {new Date(existing.scheduledAt).toLocaleString()} → {existing.email}
+          </span>
+          <button onClick={cancelReminder} disabled={saving} className="text-xs text-gray-500 hover:text-accent-red transition-colors ml-3">
+            {saving ? '…' : 'Cancel'}
+          </button>
+        </div>
+      ) : (
+        <>
+          <input
+            className="editable text-sm w-full"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <div className="flex gap-2 items-end">
+            <div className="flex-1">
+              <label className="text-xs text-gray-400">Send at (UTC)</label>
+              <input
+                className="editable text-sm mt-0.5 w-full"
+                type="datetime-local"
+                value={reminderAt}
+                onChange={e => setReminderAt(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={setReminder}
+              disabled={saving || !reminderAt || !email}
+              className="px-3 py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-xs disabled:opacity-40 transition-colors mb-0.5"
+            >
+              {saving ? '…' : 'Set'}
+            </button>
+          </div>
+          {msg && <p className="text-xs text-accent-teal">{msg}</p>}
+        </>
+      )}
+    </div>
+  )
+}
+
+export default function TransportCard({ transport, onChange, userEmail }: Props) {
   const isDemo = useDemo()
   const [open, setOpen] = useState(true)
   const add = () => onChange([...transport, { id: crypto.randomUUID(), mode: '', from: '', to: '', departureDate: '', departureTime: '', arrivalDate: '', arrivalTime: '', confirmation: '', notes: '' }])
@@ -88,6 +179,7 @@ export default function TransportCard({ transport, onChange }: Props) {
             </div>
             <Field label="Confirmation #" value={t.confirmation} onChange={v => update(t.id, { confirmation: v })} />
             <Field label="Notes" value={t.notes} onChange={v => update(t.id, { notes: v })} placeholder="Seat, gate, booking details" />
+            {!isDemo && <ReminderSection transport={t} onUpdate={patch => update(t.id, patch)} />}
           </div>
         ))}
       </div>}
