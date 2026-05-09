@@ -165,6 +165,7 @@ export default function ItineraryPage() {
           ) : activeDay ? (
             <DayView
               day={activeDay}
+              itineraryId={recordId}
               onChange={updated => {
                 const days = itinerary.days.map(d => d.id === updated.id ? updated : d)
                 updateItinerary({ ...itinerary, days })

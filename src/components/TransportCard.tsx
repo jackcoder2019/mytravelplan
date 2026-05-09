@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { type Transportation, type TransportReminder } from '@/lib/types'
 import { useDemo } from '@/lib/demo-context'
 
-interface Props { transport: Transportation[]; onChange: (t: Transportation[]) => void; userEmail?: string }
+interface Props { transport: Transportation[]; onChange: (t: Transportation[]) => void; itineraryId?: string }
 
 const MODES = ['Flight', 'Train', 'Car', 'Bus', 'Ferry', 'Walk', 'Other']
 
@@ -19,7 +19,7 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   )
 }
 
-function ReminderSection({ transport, onUpdate }: { transport: Transportation; onUpdate: (patch: Partial<Transportation>) => void }) {
+function ReminderSection({ transport, onUpdate, itineraryId }: { transport: Transportation; onUpdate: (patch: Partial<Transportation>) => void; itineraryId?: string }) {
   const [reminderAt, setReminderAt] = useState(transport.reminder?.scheduledAt?.slice(0, 16) ?? '')
   const [email, setEmail] = useState(transport.reminder?.email ?? '')
   const [saving, setSaving] = useState(false)
@@ -37,6 +37,7 @@ function ReminderSection({ transport, onUpdate }: { transport: Transportation; o
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transportId: transport.id,
+          itineraryId,
           email,
           scheduledAt: reminderAt,
           subject: `Travel reminder: ${label}`,
@@ -110,7 +111,7 @@ function ReminderSection({ transport, onUpdate }: { transport: Transportation; o
   )
 }
 
-export default function TransportCard({ transport, onChange, userEmail }: Props) {
+export default function TransportCard({ transport, onChange, itineraryId }: Props) {
   const isDemo = useDemo()
   const [open, setOpen] = useState(true)
   const add = () => onChange([...transport, { id: crypto.randomUUID(), mode: '', from: '', to: '', departureDate: '', departureTime: '', arrivalDate: '', arrivalTime: '', confirmation: '', notes: '' }])
@@ -179,7 +180,7 @@ export default function TransportCard({ transport, onChange, userEmail }: Props)
             </div>
             <Field label="Confirmation #" value={t.confirmation} onChange={v => update(t.id, { confirmation: v })} />
             <Field label="Notes" value={t.notes} onChange={v => update(t.id, { notes: v })} placeholder="Seat, gate, booking details" />
-            {!isDemo && <ReminderSection transport={t} onUpdate={patch => update(t.id, patch)} />}
+            {!isDemo && <ReminderSection transport={t} onUpdate={patch => update(t.id, patch)} itineraryId={itineraryId} />}
           </div>
         ))}
       </div>}

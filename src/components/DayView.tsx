@@ -14,6 +14,7 @@ const MapView = dynamic(() => import('./MapView'), { ssr: false })
 interface Props {
   day: Day
   onChange: (day: Day) => void
+  itineraryId?: string
 }
 
 function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
@@ -35,7 +36,7 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   )
 }
 
-export default function DayView({ day, onChange }: Props) {
+export default function DayView({ day, onChange, itineraryId }: Props) {
   const isDemo = useDemo()
   const set = (patch: Partial<Day>) => onChange({ ...day, ...patch })
   const [fetchingWeather, setFetchingWeather] = useState(false)
@@ -125,7 +126,7 @@ export default function DayView({ day, onChange }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <LodgingCard lodging={day.lodging} onChange={lodging => set({ lodging })} />
         <DiningCard dining={day.dining} onChange={dining => set({ dining })} />
-        <TransportCard transport={Array.isArray(day.transportation) ? day.transportation : []} onChange={transportation => set({ transportation })} />
+        <TransportCard transport={Array.isArray(day.transportation) ? day.transportation : []} onChange={transportation => set({ transportation })} itineraryId={itineraryId} />
       </div>
     </div>
   )
