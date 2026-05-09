@@ -68,7 +68,23 @@ function ReminderSection({ transport, onUpdate, itineraryId }: { transport: Tran
   return (
     <div className="border-t border-navy-light pt-3 space-y-2">
       <p className="text-xs text-gray-400 font-medium">Reminder email</p>
-      {existing?.status === 'pending' ? (
+      {existing?.status === 'sent' ? (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-accent-teal">
+            ✓ Sent to {existing.email} at {new Date(existing.scheduledAt).toLocaleString()}
+          </span>
+          <button onClick={() => onUpdate({ reminder: undefined })} className="text-xs text-gray-500 hover:text-gray-300 transition-colors ml-3">
+            Dismiss
+          </button>
+        </div>
+      ) : existing?.status === 'failed' ? (
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-accent-red">✗ Failed to send — check SES verification</span>
+          <button onClick={() => onUpdate({ reminder: undefined })} className="text-xs text-gray-500 hover:text-gray-300 transition-colors ml-3">
+            Dismiss
+          </button>
+        </div>
+      ) : existing?.status === 'pending' ? (
         <div className="flex items-center justify-between">
           <span className="text-xs text-accent-teal">
             Scheduled for {new Date(existing.scheduledAt).toLocaleString()} → {existing.email}

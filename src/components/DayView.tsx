@@ -99,7 +99,15 @@ export default function DayView({ day, onChange, itineraryId }: Props) {
         </summary>
         <div className="px-5 pb-5 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <Field label="Date" value={day.date} onChange={v => set({ date: v })} type="date" />
+            <Field label="Date" value={day.date} onChange={v => {
+              const patch: Partial<import('@/lib/types').Day> = { date: v }
+              if (v && !day.title) {
+                patch.title = new Date(v + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'long', month: 'long', day: 'numeric',
+                })
+              }
+              set(patch)
+            }} type="date" />
             <Field label="City" value={day.city} onChange={v => set({ city: v })} placeholder="e.g. Paris" />
             <Field label="Title" value={day.title} onChange={v => set({ title: v })} placeholder="e.g. Arrival Day" />
           </div>
