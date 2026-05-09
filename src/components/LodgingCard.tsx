@@ -17,7 +17,7 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
 export default function LodgingCard({ lodging, onChange }: Props) {
   const set = (patch: Partial<Lodging>) => onChange({ ...lodging, ...patch })
   return (
-    <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
+    <details className="bg-navy-mid rounded-2xl overflow-hidden">
       <summary className="flex items-center px-5 py-3 cursor-pointer font-semibold text-accent-teal hover:bg-navy-light transition-colors">
         Lodging
       </summary>

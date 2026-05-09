@@ -36,10 +36,23 @@ function Field({ label, value, onChange, type = 'text', placeholder = '' }: {
   )
 }
 
+function weatherEmoji(condition: string): string {
+  const c = condition.toLowerCase()
+  if (c.includes('thunder') || c.includes('storm')) return '⛈️'
+  if (c.includes('snow')) return '❄️'
+  if (c.includes('rain') || c.includes('shower') || c.includes('drizzle')) return '🌧️'
+  if (c.includes('fog') || c.includes('mist') || c.includes('freezing fog')) return '🌫️'
+  if (c.includes('sunny') || c.includes('clear')) return '☀️'
+  if (c.includes('partly') || c.includes('mainly clear')) return '⛅'
+  if (c.includes('cloud') || c.includes('overcast')) return '☁️'
+  return '🌡️'
+}
+
 export default function DayView({ day, onChange, itineraryId }: Props) {
   const isDemo = useDemo()
   const set = (patch: Partial<Day>) => onChange({ ...day, ...patch })
   const [fetchingWeather, setFetchingWeather] = useState(false)
+  const [showFields, setShowFields] = useState(false)
   const dayRef = useRef(day)
   dayRef.current = day
 
@@ -86,7 +99,16 @@ export default function DayView({ day, onChange, itineraryId }: Props) {
       {/* Day header */}
       <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
         <summary className="flex items-center justify-between px-5 py-3 cursor-pointer font-semibold text-accent-teal hover:bg-navy-light transition-colors">
-          <span>{[day.date ? day.date.slice(5).replace('-', '/') : null, day.city, day.title].filter(Boolean).join(' · ') || 'Day Info'}</span>
+          <span className="truncate">
+            {[
+              day.date ? day.date.slice(5).replace('-', '/') : null,
+              day.city,
+              day.title,
+              day.weather.condition
+                ? `${weatherEmoji(day.weather.condition)} ${[day.weather.tempHigh, day.weather.tempLow].filter(Boolean).join(' / ')}`
+                : null,
+            ].filter(Boolean).join(' · ') || 'Day Info'}
+          </span>
           {!isDemo && (
             <button
               onClick={e => { e.preventDefault(); fetchWeather() }}
@@ -97,25 +119,37 @@ export default function DayView({ day, onChange, itineraryId }: Props) {
             </button>
           )}
         </summary>
-        <div className="px-5 pb-5 pt-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <Field label="Date" value={day.date} onChange={v => {
-              const patch: Partial<import('@/lib/types').Day> = { date: v }
-              if (v && !day.title) {
-                patch.title = new Date(v + 'T00:00:00').toLocaleDateString('en-US', {
-                  weekday: 'long', month: 'long', day: 'numeric',
-                })
-              }
-              set(patch)
-            }} type="date" />
-            <Field label="City" value={day.city} onChange={v => set({ city: v })} placeholder="e.g. Paris" />
-            <Field label="Title" value={day.title} onChange={v => set({ title: v })} placeholder="e.g. Arrival Day" />
+        <div className="px-5 pb-4 pt-2">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowFields(f => !f)}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              {showFields ? 'Hide' : 'Edit details'}
+            </button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="High" value={day.weather.tempHigh} onChange={v => set({ weather: { ...day.weather, tempHigh: v } })} placeholder="75°F" />
-            <Field label="Low" value={day.weather.tempLow} onChange={v => set({ weather: { ...day.weather, tempLow: v } })} placeholder="58°F" />
-            <Field label="Condition" value={day.weather.condition} onChange={v => set({ weather: { ...day.weather, condition: v } })} placeholder="Sunny" />
-          </div>
+          {showFields && (
+            <div className="mt-2 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="Date" value={day.date} onChange={v => {
+                  const patch: Partial<import('@/lib/types').Day> = { date: v }
+                  if (v && !day.title) {
+                    patch.title = new Date(v + 'T00:00:00').toLocaleDateString('en-US', {
+                      weekday: 'long', month: 'long', day: 'numeric',
+                    })
+                  }
+                  set(patch)
+                }} type="date" />
+                <Field label="City" value={day.city} onChange={v => set({ city: v })} placeholder="e.g. Paris" />
+                <Field label="Title" value={day.title} onChange={v => set({ title: v })} placeholder="e.g. Arrival Day" />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Field label="Condition" value={day.weather.condition} onChange={v => set({ weather: { ...day.weather, condition: v } })} placeholder="Sunny" />
+                <Field label="↑ High" value={day.weather.tempHigh} onChange={v => set({ weather: { ...day.weather, tempHigh: v } })} placeholder="75°F" />
+                <Field label="↓ Low" value={day.weather.tempLow} onChange={v => set({ weather: { ...day.weather, tempLow: v } })} placeholder="58°F" />
+              </div>
+            </div>
+          )}
         </div>
       </details>
 

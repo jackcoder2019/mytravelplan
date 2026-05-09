@@ -13,7 +13,7 @@ export default function DiningCard({ dining, onChange }: Props) {
   const update = (id: string, patch: Partial<Dining>) => onChange(dining.map(d => d.id === id ? { ...d, ...patch } : d))
 
   return (
-    <details className="bg-navy-mid rounded-2xl overflow-hidden" open>
+    <details className="bg-navy-mid rounded-2xl overflow-hidden">
       <summary className="flex items-center px-5 py-3 cursor-pointer font-semibold text-accent-teal hover:bg-navy-light transition-colors">
         Dining
       </summary>

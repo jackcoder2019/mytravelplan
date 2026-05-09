@@ -33,7 +33,7 @@ export default function ActivityList({ activities, onChange }: Props) {
   const update = (id: string, patch: Partial<Activity>) =>
     onChange(activities.map(a => a.id === id ? { ...a, ...patch } : a))
 
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const sorted = [...activities].sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours))
 
   const previewLines = sorted

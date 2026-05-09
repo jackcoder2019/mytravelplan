@@ -129,7 +129,7 @@ function ReminderSection({ transport, onUpdate, itineraryId }: { transport: Tran
 
 export default function TransportCard({ transport, onChange, itineraryId }: Props) {
   const isDemo = useDemo()
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const add = () => onChange([...transport, { id: crypto.randomUUID(), mode: '', from: '', to: '', departureDate: '', departureTime: '', arrivalDate: '', arrivalTime: '', confirmation: '', notes: '' }])
   const remove = (id: string) => onChange(transport.filter(t => t.id !== id))
   const update = (id: string, patch: Partial<Transportation>) => onChange(transport.map(t => t.id === id ? { ...t, ...patch } : t))
