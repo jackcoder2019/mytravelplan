@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { type Activity } from '@/lib/types'
-import { parseStartHour } from '@/lib/utils'
+import { parseStartHour, parseEndHour, formatHour } from '@/lib/utils'
 import { useDemo } from '@/lib/demo-context'
 
 interface Props {
@@ -27,7 +27,13 @@ function Field({ value, onChange, placeholder, className = '', readOnly = false 
 export default function ActivityList({ activities, onChange }: Props) {
   const isDemo = useDemo()
   const add = () => {
-    onChange([...activities, { id: crypto.randomUUID(), name: '', highlight: '', hours: '', address: '', notes: '' }])
+    let hours = '9am–10am'
+    if (activities.length > 0) {
+      const last = [...activities].sort((a, b) => parseStartHour(a.hours) - parseStartHour(b.hours)).at(-1)!
+      const end = parseEndHour(last.hours)
+      if (end !== Infinity) hours = `${formatHour(end)}–${formatHour(end + 1)}`
+    }
+    onChange([...activities, { id: crypto.randomUUID(), name: '', highlight: '', hours, address: '', notes: '' }])
   }
   const remove = (id: string) => onChange(activities.filter(a => a.id !== id))
   const update = (id: string, patch: Partial<Activity>) =>
