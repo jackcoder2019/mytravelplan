@@ -23,6 +23,7 @@ interface Props {
   onShareTokenChange: (t: string | null) => void
   onShareLinkEnabledChange: (v: boolean) => void
   onClose: () => void
+  onSaveNow: () => void
 }
 
 const statusLabel: Record<SaveStatus, string> = {
@@ -42,7 +43,7 @@ export default function Sidebar({
   itinerary, activeDayId, saveStatus, recordId,
   sharedWith, shareToken, shareLinkEnabled,
   isOpen, onSelectDay, onAddDay, onRemoveDay, onTripNameChange, onImport,
-  onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose,
+  onSharedWithChange, onShareTokenChange, onShareLinkEnabledChange, onClose, onSaveNow,
 }: Props) {
   const isDemo = useDemo()
   const [showShare, setShowShare] = useState(false)
@@ -171,6 +172,13 @@ export default function Sidebar({
             </a>
           ) : (
             <>
+              <button
+                onClick={onSaveNow}
+                disabled={saveStatus === 'saving'}
+                className="w-full py-1.5 rounded-lg bg-accent-teal text-navy-deep font-semibold text-sm hover:opacity-90 disabled:opacity-50 transition-opacity"
+              >
+                {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved ✓' : 'Save'}
+              </button>
               <div className="flex gap-2">
                 <button onClick={() => setShowShare(true)} className="flex-1 py-1.5 rounded-lg bg-accent-teal/20 hover:bg-accent-teal/30 text-accent-teal text-sm transition-colors">
                   Share

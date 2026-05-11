@@ -60,49 +60,56 @@ export default function ItineraryPage() {
     })
   }, [router])
 
+  const doSave = useCallback(async (updated: Itinerary) => {
+    setSaveStatus('saving')
+    try {
+      const { itinerary: serverLatest } = await loadItinerary()
+      const base = serverBaseRef.current
+      const baseMap = new Map(base.days.map(d => [d.id, JSON.stringify(d)]))
+      const serverMap = new Map(serverLatest.days.map(d => [d.id, d]))
+      const localMap = new Map(updated.days.map(d => [d.id, d]))
+      const allIds = new Set([...serverMap.keys(), ...localMap.keys()])
+
+      const mergedDays = Array.from(allIds).map(id => {
+        const local = localMap.get(id)
+        const server = serverMap.get(id)
+        if (!local) return server!
+        if (!server) return local
+        const userChanged = JSON.stringify(local) !== baseMap.get(id)
+        return userChanged ? local : server
+      })
+
+      const merged: Itinerary = {
+        tripName: JSON.stringify(updated.tripName) !== JSON.stringify(base.tripName)
+          ? updated.tripName : serverLatest.tripName,
+        days: mergedDays,
+      }
+
+      lastSavedBy.current = 'self'
+      await saveItinerary(recordId, merged)
+      serverBaseRef.current = merged
+      setItinerary(merged)
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+      lastSavedBy.current = 'other'
+    } catch {
+      setSaveStatus('error')
+    }
+  }, [recordId])
+
   const scheduleSave = useCallback((updated: Itinerary) => {
     clearTimeout(saveTimer.current)
     setSaveStatus('saving')
-    saveTimer.current = setTimeout(async () => {
-      try {
-        // Fetch latest server state before writing
-        const { itinerary: serverLatest } = await loadItinerary()
+    saveTimer.current = setTimeout(() => doSave(updated), 1000)
+  }, [doSave])
 
-        // Merge: days the user changed (vs the last server base) take priority;
-        // days only on the server (added by a collaborator) are preserved.
-        const base = serverBaseRef.current
-        const baseMap = new Map(base.days.map(d => [d.id, JSON.stringify(d)]))
-        const serverMap = new Map(serverLatest.days.map(d => [d.id, d]))
-        const localMap = new Map(updated.days.map(d => [d.id, d]))
-        const allIds = new Set([...serverMap.keys(), ...localMap.keys()])
-
-        const mergedDays = Array.from(allIds).map(id => {
-          const local = localMap.get(id)
-          const server = serverMap.get(id)
-          if (!local) return server!               // collaborator added a day
-          if (!server) return local                // user added a day locally
-          const userChanged = JSON.stringify(local) !== baseMap.get(id)
-          return userChanged ? local : server      // user edit wins; otherwise take fresh server
-        })
-
-        const merged: Itinerary = {
-          tripName: JSON.stringify(updated.tripName) !== JSON.stringify(base.tripName)
-            ? updated.tripName : serverLatest.tripName,
-          days: mergedDays,
-        }
-
-        lastSavedBy.current = 'self'
-        await saveItinerary(recordId, merged)
-        serverBaseRef.current = merged
-        setItinerary(merged)
-        setSaveStatus('saved')
-        setTimeout(() => setSaveStatus('idle'), 2000)
-        lastSavedBy.current = 'other'
-      } catch {
-        setSaveStatus('error')
-      }
-    }, 1000)
-  }, [recordId])
+  // Exposed to the Save button — cancels pending auto-save and saves immediately
+  const itineraryRef = useRef(itinerary)
+  itineraryRef.current = itinerary
+  const saveNow = useCallback(() => {
+    clearTimeout(saveTimer.current)
+    doSave(itineraryRef.current)
+  }, [doSave])
 
   const updateItinerary = useCallback((updated: Itinerary) => {
     if (demoMode) return
@@ -172,6 +179,7 @@ export default function ItineraryPage() {
           onShareTokenChange={setShareToken}
           onShareLinkEnabledChange={setShareLinkEnabled}
           onClose={() => setSidebarOpen(false)}
+          onSaveNow={saveNow}
         />
         <main className="flex-1 overflow-y-auto bg-navy-deep p-4 md:p-6">
           {/* Mobile top bar */}
@@ -181,7 +189,16 @@ export default function ItineraryPage() {
               className="p-2 rounded-lg bg-navy-mid text-gray-300 hover:text-white text-xl leading-none"
               aria-label="Open menu"
             >☰</button>
-            <span className="text-accent-teal font-semibold truncate">{itinerary.tripName || 'Travel Plan'}</span>
+            <span className="text-accent-teal font-semibold truncate flex-1">{itinerary.tripName || 'Travel Plan'}</span>
+          {!demoMode && (
+            <button
+              onClick={saveNow}
+              disabled={saveStatus === 'saving'}
+              className="text-xs px-3 py-1.5 rounded-lg bg-accent-teal/20 text-accent-teal disabled:opacity-50 transition-colors"
+            >
+              {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved ✓' : 'Save'}
+            </button>
+          )}
           </div>
           {/* Demo banner */}
           {demoMode && (
