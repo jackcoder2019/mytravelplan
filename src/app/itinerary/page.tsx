@@ -70,13 +70,17 @@ export default function ItineraryPage() {
       const localMap = new Map(updated.days.map(d => [d.id, d]))
       const allIds = new Set([...serverMap.keys(), ...localMap.keys()])
 
-      const mergedDays = Array.from(allIds).map(id => {
+      const mergedDays = Array.from(allIds).flatMap(id => {
         const local = localMap.get(id)
         const server = serverMap.get(id)
-        if (!local) return server!
-        if (!server) return local
+        if (!local) {
+          // On server but not locally — keep only if it's a new collaborator day.
+          // If it was in the base, the user intentionally deleted it.
+          return baseMap.has(id) ? [] : [server!]
+        }
+        if (!server) return [local]
         const userChanged = JSON.stringify(local) !== baseMap.get(id)
-        return userChanged ? local : server
+        return [userChanged ? local : server]
       })
 
       const merged: Itinerary = {
