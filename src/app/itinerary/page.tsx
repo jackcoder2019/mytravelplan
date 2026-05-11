@@ -25,6 +25,7 @@ export default function ItineraryPage() {
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>()
   const lastSavedBy = useRef<string>('self')
+  const serverBaseRef = useRef<Itinerary>(defaultItinerary())
 
   useEffect(() => {
     const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true'
@@ -43,6 +44,7 @@ export default function ItineraryPage() {
       loadItinerary().then(({ id, itinerary: data, sharedWith: sw, shareToken: st, shareLinkEnabled: sle }) => {
         setRecordId(id)
         setItinerary(data)
+        serverBaseRef.current = data
         setActiveDayId(data.days[0]?.id ?? '')
         setSharedWith(sw)
         setShareToken(st)
@@ -63,8 +65,36 @@ export default function ItineraryPage() {
     setSaveStatus('saving')
     saveTimer.current = setTimeout(async () => {
       try {
+        // Fetch latest server state before writing
+        const { itinerary: serverLatest } = await loadItinerary()
+
+        // Merge: days the user changed (vs the last server base) take priority;
+        // days only on the server (added by a collaborator) are preserved.
+        const base = serverBaseRef.current
+        const baseMap = new Map(base.days.map(d => [d.id, JSON.stringify(d)]))
+        const serverMap = new Map(serverLatest.days.map(d => [d.id, d]))
+        const localMap = new Map(updated.days.map(d => [d.id, d]))
+        const allIds = new Set([...serverMap.keys(), ...localMap.keys()])
+
+        const mergedDays = Array.from(allIds).map(id => {
+          const local = localMap.get(id)
+          const server = serverMap.get(id)
+          if (!local) return server!               // collaborator added a day
+          if (!server) return local                // user added a day locally
+          const userChanged = JSON.stringify(local) !== baseMap.get(id)
+          return userChanged ? local : server      // user edit wins; otherwise take fresh server
+        })
+
+        const merged: Itinerary = {
+          tripName: JSON.stringify(updated.tripName) !== JSON.stringify(base.tripName)
+            ? updated.tripName : serverLatest.tripName,
+          days: mergedDays,
+        }
+
         lastSavedBy.current = 'self'
-        await saveItinerary(recordId, updated)
+        await saveItinerary(recordId, merged)
+        serverBaseRef.current = merged
+        setItinerary(merged)
         setSaveStatus('saved')
         setTimeout(() => setSaveStatus('idle'), 2000)
         lastSavedBy.current = 'other'
